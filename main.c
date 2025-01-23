@@ -157,7 +157,7 @@ string_t* prompt_string(const char* prompt, int buff_size) {
 }
 
 static const string_t str_global = STRS("My global static string");
-static const string_t COMA = STRS(", ");
+static const string_t COMMA = STRS(", ");
 
 int main() {
     print_string(&str_global);
@@ -178,7 +178,7 @@ int main() {
     string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_global.s, str_local.s, str_dynamic->s);
     print_string(str_formatted);
 
-    string_t* str_joined_n = str_join_n(5, &str_global, &COMA, &str_local, &COMA, str_dynamic);
+    string_t* str_joined_n = str_join_n(5, &str_global, &COMMA, &str_local, &COMMA, str_dynamic);
     print_string(str_joined_n);
 
     string_t* str_input = prompt_string("> ", 100);
