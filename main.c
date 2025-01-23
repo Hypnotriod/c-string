@@ -76,30 +76,12 @@ string_t* str_new(const char* chars) {
 }
 
 /**
- * Join two string_t* into a new string_t*
- * @param str1 - first string_t* to join
- * @param str2 - second string_t* to join
- * @return string_t*
- */
-string_t* str_join(const string_t* str1, const string_t* str2) {
-    int len = str1->l + str2->l;
-    __string_fam_t* str = malloc(sizeof (__string_fam_t) + len + 1);
-    if (str == NULL) return NULL;
-    memcpy(str->data, str1->s, str1->l);
-    memcpy(&str->data[str1->l], str2->s, str2->l);
-    str->data[len] = 0;
-    str->s = str->data;
-    str->l = len;
-    return (string_t*) (str);
-}
-
-/**
- * Join n of string_t* into a new string_t*
+ * Concatenate n of string_t* into a new string_t*
  * @param n - number of string_t* to join
  * @param ... - string_t*
  * @return string_t*
  */
-string_t* str_join_n(int n, ...) {
+string_t* str_concat_n(int n, ...) {
     int len = 0;
     va_list args;
     va_start(args, n);
@@ -118,6 +100,80 @@ string_t* str_join_n(int n, ...) {
         offset += s->l;
     }
     va_end(args);
+    str->data[len] = 0;
+    str->s = str->data;
+    str->l = len;
+    return (string_t*) (str);
+}
+
+/**
+ * Concatenate two string_t* into a new string_t*
+ * @param str1 - first string_t* to join
+ * @param str2 - second string_t* to join
+ * @return string_t*
+ */
+string_t* str_concat(const string_t* str1, const string_t* str2) {
+    int len = str1->l + str2->l;
+    __string_fam_t* str = malloc(sizeof (__string_fam_t) + len + 1);
+    if (str == NULL) return NULL;
+    memcpy(str->data, str1->s, str1->l);
+    memcpy(&str->data[str1->l], str2->s, str2->l);
+    str->data[len] = 0;
+    str->s = str->data;
+    str->l = len;
+    return (string_t*) (str);
+}
+
+/**
+ * Join n of string_t* into a new string_t* by the separator string_t*
+ * @param n - number of string_t* to join
+ * @param separator - string_t* separator
+ * @param ... - string_t*
+ * @return string_t*
+ */
+string_t* str_join_n(const string_t* separator, int n, ...) {
+    int len = 0;
+    va_list args;
+    va_start(args, n);
+    for (int i = 0; i < n; i++) {
+        string_t* s = va_arg(args, string_t*);
+        len += s->l;
+        if (i != n - 1) len += separator->l;
+    }
+    va_end(args);
+    __string_fam_t* str = malloc(sizeof (__string_fam_t) + len + 1);
+    if (str == NULL) return NULL;
+    int offset = 0;
+    va_start(args, n);
+    for (int i = 0; i < n; i++) {
+        string_t* s = va_arg(args, string_t*);
+        memcpy(&str->data[offset], s->s, s->l);
+        offset += s->l;
+        if (i != n - 1) {
+            memcpy(&str->data[offset], separator->s, separator->l);
+            offset += separator->l;
+        }
+    }
+    va_end(args);
+    str->data[len] = 0;
+    str->s = str->data;
+    str->l = len;
+    return (string_t*) (str);
+}
+
+/**
+ * Join two string_t* into a new string_t* by the separator string_t*
+ * @param str1 - first string_t* to join
+ * @param str2 - second string_t* to join
+ * @return string_t*
+ */
+string_t* str_join2(const string_t* separator, const string_t* str1, const string_t* str2) {
+    int len = str1->l + str2->l + separator->l;
+    __string_fam_t* str = malloc(sizeof (__string_fam_t) + len + 1);
+    if (str == NULL) return NULL;
+    memcpy(str->data, str1->s, str1->l);
+    memcpy(&str->data[str1->l], separator->s, separator->l);
+    memcpy(&str->data[str1->l + separator->l], str2->s, str2->l);
     str->data[len] = 0;
     str->s = str->data;
     str->l = len;
@@ -165,10 +221,10 @@ int main() {
     string_t str_local = STRS("My local static string");
     print_string(&str_local);
 
-    string_t* str_joined = str_join(&str_global, &str_local);
-    print_string(str_joined);
+    string_t* str_concatenated = str_concat(&str_global, &str_local);
+    print_string(str_concatenated);
 
-    string_t* str_sliced = str_slice(str_joined, -28, 8);
+    string_t* str_sliced = str_slice(str_concatenated, -28, 8);
     print_string(str_sliced);
 
     string_t* str_dynamic = str_new("My dynamic string");
@@ -178,16 +234,20 @@ int main() {
     string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_global.s, str_local.s, str_dynamic->s);
     print_string(str_formatted);
 
-    string_t* str_joined_n = str_join_n(5, &str_global, &COMMA, &str_local, &COMMA, str_dynamic);
+    string_t* str_concatenated_n = str_concat_n(5, &str_global, &COMMA, &str_local, &COMMA, str_dynamic);
+    print_string(str_concatenated_n);
+
+    string_t* str_joined_n = str_join_n(&COMMA, 3, &str_global, &str_local, str_dynamic);
     print_string(str_joined_n);
 
     string_t* str_input = prompt_string("> ", 100);
     print_string(str_input);
 
-    free(str_joined);
+    free(str_concatenated);
     free(str_sliced);
     free(str_dynamic);
     free(str_formatted);
+    free(str_concatenated_n);
     free(str_joined_n);
     free(str_input);
 
