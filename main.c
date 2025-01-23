@@ -26,8 +26,11 @@ typedef struct {
     char data[];
 } __string_fam_t;
 
-// Static string initialization macro
+// Static string_t initialization macro
 #define STRS(__CHARS__) {.l = sizeof(__CHARS__) * sizeof(char) - 1, .s = __CHARS__}
+
+// Unwrap string_t* into const char*
+#define STRU(__STRING_t__) *(const char**)(__STRING_t__)
 
 /**
  * Create new string_t* from the given characters and with the given length
@@ -141,7 +144,7 @@ string_t* str_slice(const string_t* str, int start, int len) {
 // ******* Usage example *******
 // *****************************
 
-void print_string(string_t* str) {
+void print_string(const string_t* str) {
     printf("\"%s\" has %i characters length\r\n", str->s, str->l);
 }
 
@@ -153,7 +156,8 @@ string_t* prompt_string(const char* prompt, int buff_size) {
     return str_new(buff);
 }
 
-static string_t str_global = STRS("My global static string");
+static const string_t str_global = STRS("My global static string");
+static const string_t COMA = STRS(", ");
 
 int main() {
     print_string(&str_global);
@@ -170,11 +174,11 @@ int main() {
     string_t* str_dynamic = str_new("My dynamic string");
     print_string(str_dynamic);
 
+    // string_t* str_formatted = str_new_format(100, "%s, %s, %s", STRU(&str_global), STRU(&str_local), STRU(str_dynamic));
     string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_global.s, str_local.s, str_dynamic->s);
     print_string(str_formatted);
 
-    string_t str_coma = STRS(", ");
-    string_t* str_joined_n = str_join_n(5, &str_global, &str_coma, &str_local, &str_coma, str_dynamic);
+    string_t* str_joined_n = str_join_n(5, &str_global, &COMA, &str_local, &COMA, str_dynamic);
     print_string(str_joined_n);
 
     string_t* str_input = prompt_string("> ", 100);
