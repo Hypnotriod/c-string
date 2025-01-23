@@ -162,25 +162,6 @@ string_t* str_join_n(const string_t* separator, int n, ...) {
 }
 
 /**
- * Join two string_t* into a new string_t* by the separator string_t*
- * @param str1 - first string_t* to join
- * @param str2 - second string_t* to join
- * @return string_t*
- */
-string_t* str_join2(const string_t* separator, const string_t* str1, const string_t* str2) {
-    int len = str1->l + str2->l + separator->l;
-    __string_fam_t* str = malloc(sizeof (__string_fam_t) + len + 1);
-    if (str == NULL) return NULL;
-    memcpy(str->data, str1->s, str1->l);
-    memcpy(&str->data[str1->l], separator->s, separator->l);
-    memcpy(&str->data[str1->l + separator->l], str2->s, str2->l);
-    str->data[len] = 0;
-    str->s = str->data;
-    str->l = len;
-    return (string_t*) (str);
-}
-
-/**
  * Slice string into a new string_t*
  * @param str - string to slice 
  * @param start - start character index
