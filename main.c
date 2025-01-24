@@ -13,7 +13,9 @@
  * The main immutable string structure
  */
 typedef struct {
-    const char* s;
+    // Characters array pointer
+    const char* c;
+    // Characters array length
     const int l;
 } string_t;
 
@@ -21,13 +23,13 @@ typedef struct {
  * Flexible array members based string structure
  */
 typedef struct {
-    char* s;
+    char* c;
     int l;
     char data[];
 } __string_fam_t;
 
 // Static string_t initialization macro
-#define STRS(__CHARS__) {.l = sizeof(__CHARS__) * sizeof(char) - 1, .s = __CHARS__}
+#define STRS(__CHARS__) {.l = sizeof(__CHARS__) * sizeof(char) - 1, .c = __CHARS__}
 
 // Unwrap string_t* into const char*
 #define STRU(__STRING_t__) *(const char**)(__STRING_t__)
@@ -43,7 +45,7 @@ string_t* str_new_len(const char* chars, int len) {
     if (str == NULL) return NULL;
     memcpy(str->data, chars, len);
     str->data[len] = 0;
-    str->s = str->data;
+    str->c = str->data;
     str->l = len;
     return (string_t*) (str);
 }
@@ -96,12 +98,12 @@ string_t* str_concat_n(int n, ...) {
     va_start(args, n);
     for (int i = 0; i < n; i++) {
         string_t* s = va_arg(args, string_t*);
-        memcpy(&str->data[offset], s->s, s->l);
+        memcpy(&str->data[offset], s->c, s->l);
         offset += s->l;
     }
     va_end(args);
     str->data[len] = 0;
-    str->s = str->data;
+    str->c = str->data;
     str->l = len;
     return (string_t*) (str);
 }
@@ -116,10 +118,10 @@ string_t* str_concat(const string_t* str1, const string_t* str2) {
     int len = str1->l + str2->l;
     __string_fam_t* str = malloc(sizeof (__string_fam_t) + len + 1);
     if (str == NULL) return NULL;
-    memcpy(str->data, str1->s, str1->l);
-    memcpy(&str->data[str1->l], str2->s, str2->l);
+    memcpy(str->data, str1->c, str1->l);
+    memcpy(&str->data[str1->l], str2->c, str2->l);
     str->data[len] = 0;
-    str->s = str->data;
+    str->c = str->data;
     str->l = len;
     return (string_t*) (str);
 }
@@ -147,16 +149,16 @@ string_t* str_join_n(const string_t* separator, int n, ...) {
     va_start(args, n);
     for (int i = 0; i < n; i++) {
         string_t* s = va_arg(args, string_t*);
-        memcpy(&str->data[offset], s->s, s->l);
+        memcpy(&str->data[offset], s->c, s->l);
         offset += s->l;
         if (i != n - 1) {
-            memcpy(&str->data[offset], separator->s, separator->l);
+            memcpy(&str->data[offset], separator->c, separator->l);
             offset += separator->l;
         }
     }
     va_end(args);
     str->data[len] = 0;
-    str->s = str->data;
+    str->c = str->data;
     str->l = len;
     return (string_t*) (str);
 }
@@ -174,7 +176,7 @@ string_t* str_slice(const string_t* str, int start, int len) {
     if (len < 0 || start < 0 || start >= str->l) {
         return str_new_len("", 0);
     }
-    return str_new_len(&str->s[start], len);
+    return str_new_len(&str->c[start], len);
 }
 
 // *****************************
@@ -182,7 +184,7 @@ string_t* str_slice(const string_t* str, int start, int len) {
 // *****************************
 
 void print_string(const string_t* str) {
-    printf("\"%s\" has %i characters length\r\n", str->s, str->l);
+    printf("\"%s\" has %i characters length\r\n", str->c, str->l);
 }
 
 string_t* prompt_string(const char* prompt, int buff_size) {
@@ -212,7 +214,7 @@ int main() {
     print_string(str_dynamic);
 
     // string_t* str_formatted = str_new_format(100, "%s, %s, %s", STRU(&str_global), STRU(&str_local), STRU(str_dynamic));
-    string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_global.s, str_local.s, str_dynamic->s);
+    string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_global.c, str_local.c, str_dynamic->c);
     print_string(str_formatted);
 
     string_t* str_concatenated_n = str_concat_n(5, &str_global, &COMMA, &str_local, &COMMA, str_dynamic);
@@ -223,7 +225,7 @@ int main() {
 
     string_t* str_input = prompt_string("> ", 100);
     print_string(str_input);
-
+    
     free(str_concatenated);
     free(str_sliced);
     free(str_dynamic);
