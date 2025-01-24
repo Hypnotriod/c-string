@@ -21,7 +21,7 @@ typedef struct {
  * Flexible array members based string structure
  */
 typedef struct {
-    const char* s;
+    char* s;
     int l;
     char data[];
 } __string_fam_t;
