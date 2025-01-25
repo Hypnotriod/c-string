@@ -53,7 +53,7 @@ string_t* str_new_len(const char* chars, int len) {
     str->data[len] = '\0';
     str->c = str->data;
     str->l = len;
-    return (string_t*) (str);
+    return (string_t*) str;
 }
 
 /**
@@ -111,7 +111,7 @@ string_t* str_concat_n(int n, ...) {
     str->data[len] = '\0';
     str->c = str->data;
     str->l = len;
-    return (string_t*) (str);
+    return (string_t*) str;
 }
 
 /**
