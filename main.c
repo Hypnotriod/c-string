@@ -182,16 +182,14 @@ string_t* str_join_n(const string_t* separator, int n, ...) {
 /**
  * Slice string into a new string_t*
  * @param str - string to slice 
- * @param start - start character index
- * @param len - number of characters
+ * @param start - start character index. Negative value represents before the end index
+ * @param len - number of characters to slice. Any negative value means up to the remaining length
  * @return new string_t*
  */
 string_t* str_slice(const string_t* str, int start, int len) {
-    if (start < 0) start = str->l + start;
-    if (start + len > str->l || len < 0) len = str->l - start;
-    if (len < 0 || start < 0 || start >= str->l) {
-        return str_new_len("", 0);
-    }
+    if (start < -str->l) start = 0;
+    else if (start < 0) start = str->l + start;
+    if (len < 0 || start + len > str->l) len = str->l - start;
     return str_new_len(&str->c[start], len);
 }
 
