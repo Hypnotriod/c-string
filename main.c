@@ -336,8 +336,8 @@ int main() {
     string_t what = STRS("test");
     string_t to = STRS("example");
 
-    string_t* result = str_replace_all(&str_to_replace_all, &what, &to);
-    print_string(result);
+    string_t* str_replaced_all = str_replace_all(&str_to_replace_all, &what, &to);
+    print_string(str_replaced_all);
 
     // string_t* str_formatted = str_new_format(100, "%s, %s, %s", STRU(&str_global), STRU(&str_local), STRU(str_dynamic));
     string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_global.c, str_local.c, str_dynamic->c);
@@ -364,6 +364,7 @@ int main() {
     str_free(str_replaced1);
     str_free(str_replaced2);
     str_free(str_replaced3);
+    str_free(str_replaced_all);
     str_free(str_formatted);
     str_free(str_concatenated_n);
     str_free(str_joined_n);
