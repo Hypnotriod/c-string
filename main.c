@@ -28,6 +28,8 @@ typedef struct {
     char data[];
 } __string_fam_t;
 
+#define __str_fam_new(__LEN__) malloc(sizeof (__string_fam_t) + ((__LEN__) + 1) * sizeof (char))
+
 // Static string_t initialization macro
 #define STRS(__CHARS__) {.l = sizeof((__CHARS__)) * sizeof(char) - 1, .c = (__CHARS__)}
 
@@ -44,7 +46,7 @@ typedef struct {
  * @return string_t*
  */
 string_t* str_new_len(const char* chars, int len) {
-    __string_fam_t* str = malloc(sizeof (__string_fam_t) + len + 1);
+    __string_fam_t* str = __str_fam_new(len);
     if (str == NULL) return NULL;
     memcpy(str->data, chars, len);
     str->data[len] = 0;
@@ -95,7 +97,7 @@ string_t* str_concat_n(int n, ...) {
         len += s->l;
     }
     va_end(args);
-    __string_fam_t* str = malloc(sizeof (__string_fam_t) + len + 1);
+    __string_fam_t* str = __str_fam_new(len);
     if (str == NULL) return NULL;
     int offset = 0;
     va_start(args, n);
@@ -119,7 +121,7 @@ string_t* str_concat_n(int n, ...) {
  */
 string_t* str_concat(const string_t* str1, const string_t* str2) {
     int len = str1->l + str2->l;
-    __string_fam_t* str = malloc(sizeof (__string_fam_t) + len + 1);
+    __string_fam_t* str = __str_fam_new(len);
     if (str == NULL) return NULL;
     memcpy(str->data, str1->c, str1->l);
     memcpy(&str->data[str1->l], str2->c, str2->l);
@@ -146,7 +148,7 @@ string_t* str_join_n(const string_t* separator, int n, ...) {
         if (i != n - 1) len += separator->l;
     }
     va_end(args);
-    __string_fam_t* str = malloc(sizeof (__string_fam_t) + len + 1);
+    __string_fam_t* str = __str_fam_new(len);
     if (str == NULL) return NULL;
     int offset = 0;
     va_start(args, n);
