@@ -31,7 +31,7 @@ typedef struct {
 #define __str_fam_new(__LEN__) malloc(sizeof (__string_fam_t) + ((__LEN__) + 1) * sizeof (char))
 
 // Static string_t initialization macro
-#define STRS(__CHARS__) {.l = sizeof((__CHARS__)) * sizeof(char) - 1, .c = (__CHARS__)}
+#define STRS(__CHARS__) {.l = sizeof((__CHARS__)) / sizeof(char) - 1, .c = (__CHARS__)}
 
 // Unwrap string_t* into const char*
 #define STRU(__STRING_t__) *(const char**)((__STRING_t__))
