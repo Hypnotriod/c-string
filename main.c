@@ -211,6 +211,23 @@ string_t* str_trim(const string_t* str) {
 }
 
 /**
+ * Get number of occurrences of a substring string_t* in the given string_t*
+ * @param str - string_t* input
+ * @param substr - string_t* to search for
+ * @return int
+ */
+int str_count(const string_t* str, const string_t* substr) {
+    int i, count = 0;
+    for (i = 0; i <= str->l - substr->l; i++) {
+        if (strncmp(&str->c[i], substr->c, substr->l) == 0) {
+            count++;
+            i += substr->l - 1;
+        }
+    }
+    return count;
+}
+
+/**
  * Replace first occurrence of string_t* 'what' with string_t* 'to' in string_t*
  * @param str - string_t* input
  * @param what - string_t* to search for
@@ -250,14 +267,8 @@ string_t* str_replace(const string_t* str, const string_t* what, const string_t*
  */
 string_t* str_replace_all(const string_t* str, const string_t* what, const string_t* to) {
     if (what->l == 0) return str_new_len(str->c, str->l);
-    int count = 0;
     int i, j = 0, k = 0, l = 0;
-    for (i = 0; i <= str->l - what->l; i++) {
-        if (strncmp(&str->c[i], what->c, what->l) == 0) {
-            count++;
-            i += what->l;
-        }
-    }
+    int count = str_count(str, what);
     int new_len = str->l + count * (to->l - what->l);
     __string_fam_t* strnew = __str_fam_malloc(new_len);
     if (strnew == NULL) return NULL;
@@ -332,7 +343,7 @@ int main() {
     string_t* str_replaced3 = str_replace(str_replaced2, &what3, &to3);
     print_string(str_replaced3);
 
-    string_t str_to_replace_all = STRS("test... this is a test. This test is simple. tes");
+    string_t str_to_replace_all = STRS("test... this is a test. (testtest) This test is simple. tes");
     string_t what = STRS("test");
     string_t to = STRS("example");
 
