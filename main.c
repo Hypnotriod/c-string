@@ -49,7 +49,7 @@ typedef struct {
 string_t* str_new_len(const char* chars, int len) {
     __string_fam_t* str = __str_fam_malloc(len);
     if (str == NULL) return NULL;
-    memcpy(str->data, chars, len);
+    strncpy(str->data, chars, len);
     str->data[len] = '\0';
     str->c = str->data;
     str->l = len;
@@ -104,7 +104,7 @@ string_t* str_concat_n(int n, ...) {
     va_start(args, n);
     for (int i = 0; i < n; i++) {
         string_t* s = va_arg(args, string_t*);
-        memcpy(&str->data[offset], s->c, s->l);
+        strncpy(&str->data[offset], s->c, s->l);
         offset += s->l;
     }
     va_end(args);
@@ -124,8 +124,8 @@ string_t* str_concat(const string_t* str1, const string_t* str2) {
     int len = str1->l + str2->l;
     __string_fam_t* str = __str_fam_malloc(len);
     if (str == NULL) return NULL;
-    memcpy(str->data, str1->c, str1->l);
-    memcpy(&str->data[str1->l], str2->c, str2->l);
+    strncpy(str->data, str1->c, str1->l);
+    strncpy(&str->data[str1->l], str2->c, str2->l);
     str->data[len] = '\0';
     str->c = str->data;
     str->l = len;
@@ -155,10 +155,10 @@ string_t* str_join_n(const string_t* separator, int n, ...) {
     va_start(args, n);
     for (int i = 0; i < n; i++) {
         string_t* s = va_arg(args, string_t*);
-        memcpy(&str->data[offset], s->c, s->l);
+        strncpy(&str->data[offset], s->c, s->l);
         offset += s->l;
         if (i != n - 1) {
-            memcpy(&str->data[offset], separator->c, separator->l);
+            strncpy(&str->data[offset], separator->c, separator->l);
             offset += separator->l;
         }
     }
