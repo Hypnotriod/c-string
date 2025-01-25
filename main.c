@@ -29,10 +29,13 @@ typedef struct {
 } __string_fam_t;
 
 // Static string_t initialization macro
-#define STRS(__CHARS__) {.l = sizeof(__CHARS__) * sizeof(char) - 1, .c = __CHARS__}
+#define STRS(__CHARS__) {.l = sizeof((__CHARS__)) * sizeof(char) - 1, .c = (__CHARS__)}
 
 // Unwrap string_t* into const char*
-#define STRU(__STRING_t__) *(const char**)(__STRING_t__)
+#define STRU(__STRING_t__) *(const char**)((__STRING_t__))
+
+// Dynamic string_t* helper macro to free and set a null pointer
+#define str_free(__STRING_t__) { free((__STRING_t__)); (__STRING_t__) = NULL; }
 
 /**
  * Create new string_t* from the given characters and with the given length
@@ -225,14 +228,17 @@ int main() {
 
     string_t* str_input = prompt_string("> ", 100);
     print_string(str_input);
-    
-    free(str_concatenated);
-    free(str_sliced);
-    free(str_dynamic);
-    free(str_formatted);
-    free(str_concatenated_n);
-    free(str_joined_n);
-    free(str_input);
+
+    str_free(str_concatenated);
+    str_free(str_sliced);
+    str_free(str_dynamic);
+    str_free(str_formatted);
+    str_free(str_concatenated_n);
+    str_free(str_joined_n);
+    str_free(str_input);
+    printf("str_input is pointing at %p\r\n", str_input);
+    // Test free after free
+    str_free(str_input);
 
     return (EXIT_SUCCESS);
 }
