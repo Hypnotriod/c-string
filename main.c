@@ -218,28 +218,69 @@ string_t* str_trim(const string_t* str) {
  * @return new string_t*
  */
 string_t* str_replace(const string_t* str, const string_t* what, const string_t* to) {
-    int i;
-    int start;
-    int end;
-    for (start = 0; start < str->l; start++) {
-        for (i = 0, end = start; i < what->l && end < str->l; i++, end++) {
-            if (what->c[i] != str->c[end]) break;
+    if (what->l == 0) return str_new_len(str->c, str->l);
+    int i, j;
+    for (i = 0; i < str->l; i++) {
+        if (strncmp(&str->c[i], what->c, what->l) == 0) {
+            j = i + what->l;
+            break;
         }
-        if (i == what->l) break;
     }
-    if (start < str->l) {
-        int len = start + to->l + str->l - end;
+    if (i < str->l) {
+        int len = i + to->l + str->l - j;
         __string_fam_t* strnew = __str_fam_malloc(len);
         if (strnew == NULL) return NULL;
-        memcpy(strnew->data, str->c, start * sizeof (char));
-        memcpy(&strnew->data[start], to->c, to->l * sizeof (char));
-        memcpy(&strnew->data[start + to->l], &str->c[end], (str->l - end) * sizeof (char));
+        memcpy(strnew->data, str->c, i * sizeof (char));
+        memcpy(&strnew->data[i], to->c, to->l * sizeof (char));
+        memcpy(&strnew->data[i + to->l], &str->c[j], (str->l - j) * sizeof (char));
         strnew->data[len] = '\0';
         strnew->c = strnew->data;
         strnew->l = len;
         return (string_t*) strnew;
     }
     return str_new_len(str->c, str->l);
+}
+
+/**
+ * Replace all occurrences of string_t* 'what' with string_t* 'to' in string_t*
+ * @param str - string_t* input
+ * @param what - string_t* to search for
+ * @param to - string_t* to replace with
+ * @return new string_t*
+ */
+string_t* str_replace_all(const string_t* str, const string_t* what, const string_t* to) {
+    if (what->l == 0) return str_new_len(str->c, str->l);
+    int count = 0;
+    int i, j = 0, k = 0, l = 0;
+    for (i = 0; i <= str->l - what->l; i++) {
+        if (strncmp(&str->c[i], what->c, what->l) == 0) {
+            count++;
+            i += what->l;
+        }
+    }
+    int new_len = str->l + count * (to->l - what->l);
+    __string_fam_t* strnew = __str_fam_malloc(new_len);
+    if (strnew == NULL) return NULL;
+    for (i = 0; i < str->l;) {
+        if (i <= str->l - what->l && strncmp(&str->c[i], what->c, what->l) == 0) {
+            memcpy(&strnew->data[k], &str->c[l], (j - k) * sizeof (char));
+            memcpy(&strnew->data[j], to->c, to->l * sizeof (char));
+            j += to->l;
+            i += what->l;
+            k = j;
+            l = i;
+        } else {
+            j++;
+            i++;
+        }
+    }
+    if (k != j) {
+        memcpy(&strnew->data[k], &str->c[l], (j - k) * sizeof (char));
+    }
+    strnew->data[j] = '\0';
+    strnew->c = strnew->data;
+    strnew->l = new_len;
+    return (string_t*) strnew;
 }
 
 // *****************************
@@ -290,6 +331,13 @@ int main() {
     string_t to3 = STRS("456");
     string_t* str_replaced3 = str_replace(str_replaced2, &what3, &to3);
     print_string(str_replaced3);
+
+    string_t str_to_replace_all = STRS("test... this is a test. This test is simple. tes");
+    string_t what = STRS("test");
+    string_t to = STRS("example");
+
+    string_t* result = str_replace_all(&str_to_replace_all, &what, &to);
+    print_string(result);
 
     // string_t* str_formatted = str_new_format(100, "%s, %s, %s", STRU(&str_global), STRU(&str_local), STRU(str_dynamic));
     string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_global.c, str_local.c, str_dynamic->c);
