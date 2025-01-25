@@ -269,8 +269,8 @@ string_t* str_replace_all(const string_t* str, const string_t* what, const strin
     if (what->l == 0) return str_new_len(str->c, str->l);
     int i, j = 0, k = 0, l = 0;
     int count = str_count(str, what);
-    int new_len = str->l + count * (to->l - what->l);
-    __string_fam_t* strnew = __str_fam_malloc(new_len);
+    int len = str->l + count * (to->l - what->l);
+    __string_fam_t* strnew = __str_fam_malloc(len);
     if (strnew == NULL) return NULL;
     for (i = 0; i < str->l;) {
         if (i <= str->l - what->l && strncmp(&str->c[i], what->c, what->l) == 0) {
@@ -290,7 +290,7 @@ string_t* str_replace_all(const string_t* str, const string_t* what, const strin
     }
     strnew->data[j] = '\0';
     strnew->c = strnew->data;
-    strnew->l = new_len;
+    strnew->l = len;
     return (string_t*) strnew;
 }
 
