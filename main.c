@@ -28,7 +28,8 @@ typedef struct {
     char data[];
 } __string_fam_t;
 
-#define __str_fam_new(__LEN__) malloc(sizeof (__string_fam_t) + ((__LEN__) + 1) * sizeof (char))
+// __string_fam_t* memory allocation macro helper
+#define __str_fam_malloc(__LEN__) malloc(sizeof (__string_fam_t) + ((__LEN__) + 1) * sizeof (char))
 
 // Static string_t initialization macro
 #define STRS(__CHARS__) {.l = sizeof((__CHARS__)) / sizeof(char) - 1, .c = (__CHARS__)}
@@ -46,17 +47,17 @@ typedef struct {
  * @return string_t*
  */
 string_t* str_new_len(const char* chars, int len) {
-    __string_fam_t* str = __str_fam_new(len);
+    __string_fam_t* str = __str_fam_malloc(len);
     if (str == NULL) return NULL;
     memcpy(str->data, chars, len);
-    str->data[len] = 0;
+    str->data[len] = '\0';
     str->c = str->data;
     str->l = len;
     return (string_t*) (str);
 }
 
 /**
- * Create new formatted string_t*
+ * Create new formatted string_t* using variable-length array buffer
  * @param buff_size - the size of the variable-length array buffer
  * @param format - format characters
  * @param ... - format parameters
@@ -68,7 +69,7 @@ string_t* str_new_format(int buff_size, const char* format, ...) {
     char chars[buff_size];
     vsnprintf(chars, buff_size, format, ap);
     va_end(ap);
-    int len = sizeof (char) * strlen(chars);
+    int len = strlen(chars);
     return str_new_len(chars, len);
 }
 
@@ -78,7 +79,7 @@ string_t* str_new_format(int buff_size, const char* format, ...) {
  * @return string_t*
  */
 string_t* str_new(const char* chars) {
-    int len = sizeof (char) * strlen(chars);
+    int len = strlen(chars);
     return str_new_len(chars, len);
 }
 
@@ -97,7 +98,7 @@ string_t* str_concat_n(int n, ...) {
         len += s->l;
     }
     va_end(args);
-    __string_fam_t* str = __str_fam_new(len);
+    __string_fam_t* str = __str_fam_malloc(len);
     if (str == NULL) return NULL;
     int offset = 0;
     va_start(args, n);
@@ -107,7 +108,7 @@ string_t* str_concat_n(int n, ...) {
         offset += s->l;
     }
     va_end(args);
-    str->data[len] = 0;
+    str->data[len] = '\0';
     str->c = str->data;
     str->l = len;
     return (string_t*) (str);
@@ -121,14 +122,14 @@ string_t* str_concat_n(int n, ...) {
  */
 string_t* str_concat(const string_t* str1, const string_t* str2) {
     int len = str1->l + str2->l;
-    __string_fam_t* str = __str_fam_new(len);
+    __string_fam_t* str = __str_fam_malloc(len);
     if (str == NULL) return NULL;
     memcpy(str->data, str1->c, str1->l);
     memcpy(&str->data[str1->l], str2->c, str2->l);
-    str->data[len] = 0;
+    str->data[len] = '\0';
     str->c = str->data;
     str->l = len;
-    return (string_t*) (str);
+    return (string_t*) str;
 }
 
 /**
@@ -148,7 +149,7 @@ string_t* str_join_n(const string_t* separator, int n, ...) {
         if (i != n - 1) len += separator->l;
     }
     va_end(args);
-    __string_fam_t* str = __str_fam_new(len);
+    __string_fam_t* str = __str_fam_malloc(len);
     if (str == NULL) return NULL;
     int offset = 0;
     va_start(args, n);
@@ -162,10 +163,10 @@ string_t* str_join_n(const string_t* separator, int n, ...) {
         }
     }
     va_end(args);
-    str->data[len] = 0;
+    str->data[len] = '\0';
     str->c = str->data;
     str->l = len;
-    return (string_t*) (str);
+    return (string_t*) str;
 }
 
 /**
@@ -238,7 +239,7 @@ int main() {
     str_free(str_concatenated_n);
     str_free(str_joined_n);
     str_free(str_input);
-    printf("str_input is pointing at %p\r\n", str_input);
+    printf("str_input is pointing at %p after str_free call\r\n", str_input);
     // Test free after free
     str_free(str_input);
 
