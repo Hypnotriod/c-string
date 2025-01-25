@@ -188,7 +188,7 @@ string_t* str_join_n(const string_t* separator, int n, ...) {
  */
 string_t* str_slice(const string_t* str, int start, int len) {
     if (start < 0) start = str->l + start;
-    if (start + len > str->l) len = str->l - start;
+    if (start + len > str->l || len < 0) len = str->l - start;
     if (len < 0 || start < 0 || start >= str->l) {
         return str_new_len("", 0);
     }
@@ -208,6 +208,40 @@ string_t* str_trim(const string_t* str) {
     while (end != 0 && isspace(str->c[end - 1]))
         end--;
     return str_new_len(&str->c[start], end - start);
+}
+
+/**
+ * Get index of first occurrence of substring string_t* in the given string_t*.
+ * Returns -1 if nothing found or substring is empty string
+ * @param str - string_t* input
+ * @param substr - string_t* to search for
+ * @return int
+ */
+int str_index_of(const string_t* str, const string_t* substr) {
+    if (substr->l == 0) return -1;
+    for (int i = 0; i < str->l; i++) {
+        if (strncmp(&str->c[i], substr->c, substr->l) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/**
+ * Get index of last occurrence of substring string_t* in the given string_t*.
+ * Returns -1 if nothing found or substring is empty string
+ * @param str - string_t* input
+ * @param substr - string_t* to search for
+ * @return int
+ */
+int str_last_index_of(const string_t* str, const string_t* substr) {
+    if (substr->l == 0) return -1;
+    for (int i = str->l - 1; i >= 0; i--) {
+        if (strncmp(&str->c[i], substr->c, substr->l) == 0) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 /**
@@ -312,6 +346,7 @@ string_t* prompt_string(const char* prompt, int buff_size) {
 
 static const string_t str_global = STRS("My global static string");
 static const string_t COMMA = STRS(", ");
+static const string_t DOT = STRS(".");
 
 int main() {
     print_string(&str_global);
@@ -346,9 +381,16 @@ int main() {
     string_t str_to_replace_all = STRS("test... this is a test. (testtest) This test is simple. tes");
     string_t what = STRS("test");
     string_t to = STRS("example");
-
     string_t* str_replaced_all = str_replace_all(&str_to_replace_all, &what, &to);
     print_string(str_replaced_all);
+
+    int index_of = str_index_of(str_dynamic, &what2);
+    printf("index of 'string' in 'My dynamic string' is %i\r\n", index_of);
+
+    string_t str_file_name = STRS("test.file.name.txt");
+    index_of = str_last_index_of(&str_file_name, &DOT);
+    string_t* str_file_extension = str_slice(&str_file_name, index_of, -1);
+    print_string(str_file_extension);
 
     // string_t* str_formatted = str_new_format(100, "%s, %s, %s", STRU(&str_global), STRU(&str_local), STRU(str_dynamic));
     string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_global.c, str_local.c, str_dynamic->c);
@@ -376,6 +418,7 @@ int main() {
     str_free(str_replaced2);
     str_free(str_replaced3);
     str_free(str_replaced_all);
+    str_free(str_file_extension);
     str_free(str_formatted);
     str_free(str_concatenated_n);
     str_free(str_joined_n);
