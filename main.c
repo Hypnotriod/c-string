@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -44,7 +45,7 @@ typedef struct {
  * Create new string_t* from the given characters and with the given length
  * @param chars - characters array
  * @param len - characters array length
- * @return string_t*
+ * @return new string_t*
  */
 string_t* str_new_len(const char* chars, int len) {
     __string_fam_t* str = __str_fam_malloc(len);
@@ -61,7 +62,7 @@ string_t* str_new_len(const char* chars, int len) {
  * @param buff_size - the size of the variable-length array buffer
  * @param format - format characters
  * @param ... - format parameters
- * @return string_t*
+ * @return new string_t*
  */
 string_t* str_new_format(int buff_size, const char* format, ...) {
     va_list ap;
@@ -76,7 +77,7 @@ string_t* str_new_format(int buff_size, const char* format, ...) {
 /**
  * Create new string_t* from the given characters
  * @param chars - characters array
- * @return string_t*
+ * @return new string_t*
  */
 string_t* str_new(const char* chars) {
     int len = strlen(chars);
@@ -84,10 +85,19 @@ string_t* str_new(const char* chars) {
 }
 
 /**
+ * Clone a string_t*
+ * @param str - string_t* to clone
+ * @return new string_t*
+ */
+string_t* str_clone(const string_t* str) {
+    return str_new_len(str->c, str->l);
+}
+
+/**
  * Concatenate n of string_t* into a new string_t*
  * @param n - number of string_t* to join
  * @param ... - string_t*
- * @return string_t*
+ * @return new string_t*
  */
 string_t* str_concat_n(int n, ...) {
     int len = 0;
@@ -118,7 +128,7 @@ string_t* str_concat_n(int n, ...) {
  * Concatenate two string_t* into a new string_t*
  * @param str1 - first string_t* to join
  * @param str2 - second string_t* to join
- * @return string_t*
+ * @return new string_t*
  */
 string_t* str_concat(const string_t* str1, const string_t* str2) {
     int len = str1->l + str2->l;
@@ -137,7 +147,7 @@ string_t* str_concat(const string_t* str1, const string_t* str2) {
  * @param n - number of string_t* to join
  * @param separator - string_t* separator
  * @param ... - string_t*
- * @return string_t*
+ * @return new string_t*
  */
 string_t* str_join_n(const string_t* separator, int n, ...) {
     int len = 0;
@@ -174,7 +184,7 @@ string_t* str_join_n(const string_t* separator, int n, ...) {
  * @param str - string to slice 
  * @param start - start character index
  * @param len - number of characters
- * @return string_t*
+ * @return new string_t*
  */
 string_t* str_slice(const string_t* str, int start, int len) {
     if (start < 0) start = str->l + start;
@@ -183,6 +193,53 @@ string_t* str_slice(const string_t* str, int start, int len) {
         return str_new_len("", 0);
     }
     return str_new_len(&str->c[start], len);
+}
+
+/**
+ * Trim ' ', '\t', '\n', '\v', '\f', '\r' characters from string_t*
+ * @param str - string_t* to trim
+ * @return new string_t*
+ */
+string_t* str_trim(const string_t* str) {
+    int start = 0;
+    int end = str->l;
+    while (start != end && isspace(str->c[start]))
+        start++;
+    while (end != 0 && isspace(str->c[end - 1]))
+        end--;
+    return str_new_len(&str->c[start], end - start);
+}
+
+/**
+ * Replace first occurrence of string_t* 'what' with string_t* 'to' in string_t*
+ * @param str - string_t* input
+ * @param what - string_t* to search for
+ * @param to - string_t* to replace with
+ * @return new string_t*
+ */
+string_t* str_replace(const string_t* str, const string_t* what, const string_t* to) {
+    int i;
+    int start;
+    int end;
+    for (start = 0; start < str->l; start++) {
+        for (i = 0, end = start; i < what->l && end < str->l; i++, end++) {
+            if (what->c[i] != str->c[end]) break;
+        }
+        if (i == what->l) break;
+    }
+    if (start < str->l) {
+        int len = start + to->l + str->l - end;
+        __string_fam_t* strnew = __str_fam_malloc(len);
+        if (strnew == NULL) return NULL;
+        memcpy(strnew->data, str->c, start * sizeof (char));
+        memcpy(&strnew->data[start], to->c, to->l * sizeof (char));
+        memcpy(&strnew->data[start + to->l], &str->c[end], (str->l - end) * sizeof (char));
+        strnew->data[len] = '\0';
+        strnew->c = strnew->data;
+        strnew->l = len;
+        return (string_t*) strnew;
+    }
+    return str_new_len(str->c, str->l);
 }
 
 // *****************************
@@ -219,6 +276,21 @@ int main() {
     string_t* str_dynamic = str_new("My dynamic string");
     print_string(str_dynamic);
 
+    string_t what1 = STRS("My");
+    string_t to1 = STRS("123");
+    string_t* str_replaced1 = str_replace(str_dynamic, &what1, &to1);
+    print_string(str_replaced1);
+
+    string_t what2 = STRS("string");
+    string_t to2 = STRS("789");
+    string_t* str_replaced2 = str_replace(str_replaced1, &what2, &to2);
+    print_string(str_replaced2);
+
+    string_t what3 = STRS(" dynamic ");
+    string_t to3 = STRS("456");
+    string_t* str_replaced3 = str_replace(str_replaced2, &what3, &to3);
+    print_string(str_replaced3);
+
     // string_t* str_formatted = str_new_format(100, "%s, %s, %s", STRU(&str_global), STRU(&str_local), STRU(str_dynamic));
     string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_global.c, str_local.c, str_dynamic->c);
     print_string(str_formatted);
@@ -232,13 +304,25 @@ int main() {
     string_t* str_input = prompt_string("> ", 100);
     print_string(str_input);
 
+    string_t* str_cloned = str_clone(str_input);
+    print_string(str_cloned);
+
+    string_t* str_trimmed = str_trim(str_cloned);
+    print_string(str_trimmed);
+
     str_free(str_concatenated);
     str_free(str_sliced);
     str_free(str_dynamic);
+    str_free(str_replaced1);
+    str_free(str_replaced2);
+    str_free(str_replaced3);
     str_free(str_formatted);
     str_free(str_concatenated_n);
     str_free(str_joined_n);
     str_free(str_input);
+    str_free(str_cloned);
+    str_free(str_trimmed);
+
     printf("str_input is pointing at %p after str_free call\r\n", str_input);
     // Test free after free
     str_free(str_input);
