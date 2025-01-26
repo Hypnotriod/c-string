@@ -70,7 +70,7 @@ string_t* str_new_format(int buff_size, const char* format, ...) {
     char chars[buff_size];
     int len = vsnprintf(chars, buff_size, format, ap);
     va_end(ap);
-    if (len >= buff_size) len = buff_size;
+    if (len > buff_size) len = buff_size;
     else if (len < 0) len = 0;
     return str_new_len(chars, len);
 }
