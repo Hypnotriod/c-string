@@ -68,9 +68,9 @@ string_t* str_new_format(int buff_size, const char* format, ...) {
     va_list ap;
     va_start(ap, format);
     char chars[buff_size];
-    vsnprintf(chars, buff_size, format, ap);
+    int len = vsnprintf(chars, buff_size, format, ap);
     va_end(ap);
-    int len = strlen(chars);
+    if (len >= buff_size || len < 0) len = 0;
     return str_new_len(chars, len);
 }
 
