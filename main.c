@@ -8,6 +8,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 /**
@@ -210,6 +211,32 @@ string_t* str_trim(const string_t* str) {
 }
 
 /**
+ * Compare two given strings values for equality
+ * @param str1 - string_t* first string
+ * @param str2 - string_t* second string
+ * @return bool
+ */
+bool str_equals(const string_t* str1, const string_t* str2) {
+    return strncmp(str1->c, str2->c, str2->l) == 0;
+}
+
+/**
+ * Check if a substring string_t* occurs within the given string_t*
+ * @param str
+ * @param substr
+ * @return 
+ */
+bool str_contains(const string_t* str, const string_t* substr) {
+    if (substr->l == 0) return false;
+    for (int i = 0; i <= str->l - substr->l; i++) {
+        if (strncmp(&str->c[i], substr->c, substr->l) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * Get index of first occurrence of substring string_t* in the given string_t*.
  * Returns -1 if nothing found or substring is empty string
  * @param str - string_t* input
@@ -383,12 +410,15 @@ int main() {
     string_t* str_replaced_all = str_replace_all(&str_to_replace_all, &what, &to);
     print_string(str_replaced_all);
 
-    int index_of = str_index_of(str_dynamic, &what2);
-    printf("index of 'string' in 'My dynamic string' is %i\r\n", index_of);
+    int str_index_of_result = str_index_of(str_dynamic, &what2);
+    printf("index of 'string' in 'My dynamic string' is %i\r\n", str_index_of_result);
+
+    bool str_contains_result = str_contains(str_dynamic, &what2);
+    printf("'My dynamic string' contains 'string': %s\r\n", str_contains_result ? "true" : "false");
 
     string_t str_file_name = STRS("test.file.name.txt");
-    index_of = str_last_index_of(&str_file_name, &DOT);
-    string_t* str_file_extension = str_slice(&str_file_name, index_of, -1);
+    str_index_of_result = str_last_index_of(&str_file_name, &DOT);
+    string_t* str_file_extension = str_slice(&str_file_name, str_index_of_result, -1);
     print_string(str_file_extension);
 
     // string_t* str_formatted = str_new_format(100, "%s, %s, %s", STRU(&str_global), STRU(&str_local), STRU(str_dynamic));
@@ -400,6 +430,9 @@ int main() {
 
     string_t* str_joined_n = str_join_n(&COMMA, 3, &str_global, &str_local, str_dynamic);
     print_string(str_joined_n);
+
+    bool str_equals_result = str_equals(str_concatenated_n, str_joined_n);
+    printf("strings are equal: %s\r\n", str_equals_result ? "true" : "false");
 
     string_t* str_input = prompt_string("> ", 100);
     print_string(str_input);
