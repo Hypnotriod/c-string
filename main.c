@@ -222,9 +222,9 @@ bool str_equals(const string_t* str1, const string_t* str2) {
 
 /**
  * Check if a substring string_t* occurs within the given string_t*
- * @param str
- * @param substr
- * @return 
+ * @param str - string_t* input
+ * @param substr - string_t* to search for
+ * @return bool
  */
 bool str_contains(const string_t* str, const string_t* substr) {
     if (substr->l == 0) return false;
