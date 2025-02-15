@@ -33,11 +33,11 @@ typedef struct {
 // __string_fam_t* memory allocation macro helper
 #define __str_fam_malloc(__LEN__) malloc(sizeof (__string_fam_t) + ((__LEN__) + 1) * sizeof (char))
 
-// Static string_t initialization macro
-#define STRS(__CHARS__) {.l = sizeof((__CHARS__)) / sizeof(char) - 1, .c = (__CHARS__)}
+// Statically allocated string_t initialization macro
+#define str_static(__CHARS__) {.l = sizeof((__CHARS__)) / sizeof(char) - 1, .c = (__CHARS__)}
 
 // Unwrap string_t* into const char*
-#define STRU(__STRING_t__) *(const char**)((__STRING_t__))
+#define str_unwrap(__STRING_t__) *(const char**)((__STRING_t__))
 
 // Dynamic string_t* helper macro to free and set a null pointer
 #define str_free(__STRING_t__) { free((__STRING_t__)); (__STRING_t__) = NULL; }
@@ -370,43 +370,43 @@ string_t* prompt_string(const char* prompt, int buff_size) {
     return str_new(buff);
 }
 
-static const string_t str_global = STRS("My global static string");
-static const string_t COMMA = STRS(", ");
-static const string_t DOT = STRS(".");
+static const string_t str_global = str_static("My global statically allocated string");
+static const string_t COMMA = str_static(", ");
+static const string_t DOT = str_static(".");
 
 int main() {
     print_string(&str_global);
 
-    string_t str_local = STRS("My local static string");
+    string_t str_local = str_static("My local statically allocated string");
     print_string(&str_local);
 
     string_t* str_concatenated = str_concat(&str_global, &str_local);
     print_string(str_concatenated);
 
-    string_t* str_sliced = str_slice(str_concatenated, -28, 8);
+    string_t* str_sliced = str_slice(str_concatenated, -28, 12);
     print_string(str_sliced);
 
     string_t* str_dynamic = str_new("My dynamic string");
     print_string(str_dynamic);
 
-    string_t what1 = STRS("My");
-    string_t to1 = STRS("123");
+    string_t what1 = str_static("My");
+    string_t to1 = str_static("123");
     string_t* str_replaced1 = str_replace(str_dynamic, &what1, &to1);
     print_string(str_replaced1);
 
-    string_t what2 = STRS("string");
-    string_t to2 = STRS("789");
+    string_t what2 = str_static("string");
+    string_t to2 = str_static("789");
     string_t* str_replaced2 = str_replace(str_replaced1, &what2, &to2);
     print_string(str_replaced2);
 
-    string_t what3 = STRS(" dynamic ");
-    string_t to3 = STRS("456");
+    string_t what3 = str_static(" dynamic ");
+    string_t to3 = str_static("456");
     string_t* str_replaced3 = str_replace(str_replaced2, &what3, &to3);
     print_string(str_replaced3);
 
-    string_t str_to_replace_all = STRS("test... this is a test. (testtest) This test is simple. tes");
-    string_t what = STRS("test");
-    string_t to = STRS("example");
+    string_t str_to_replace_all = str_static("test... this is a test. (testtest) This test is simple. tes");
+    string_t what = str_static("test");
+    string_t to = str_static("example");
     string_t* str_replaced_all = str_replace_all(&str_to_replace_all, &what, &to);
     print_string(str_replaced_all);
 
@@ -416,12 +416,12 @@ int main() {
     bool str_contains_result = str_contains(str_dynamic, &what2);
     printf("'My dynamic string' contains 'string': %s\r\n", str_contains_result ? "true" : "false");
 
-    string_t str_file_name = STRS("test.file.name.txt");
+    string_t str_file_name = str_static("test.file.name.txt");
     str_index_of_result = str_last_index_of(&str_file_name, &DOT);
     string_t* str_file_extension = str_slice(&str_file_name, str_index_of_result, -1);
     print_string(str_file_extension);
 
-    // string_t* str_formatted = str_new_format(100, "%s, %s, %s", STRU(&str_global), STRU(&str_local), STRU(str_dynamic));
+    // string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_unwrap(&str_global), str_unwrap(&str_local), str_unwrap(str_dynamic));
     string_t* str_formatted = str_new_format(100, "%s, %s, %s", str_global.c, str_local.c, str_dynamic->c);
     print_string(str_formatted);
 
